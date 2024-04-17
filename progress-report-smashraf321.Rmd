@@ -1,0 +1,16 @@
+---
+title: "progress-report-smashraf321"
+author: "Ashraf Shaikh"
+date: "4/17/2024"
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit the README.Rmd file -->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Lab report #4
+
