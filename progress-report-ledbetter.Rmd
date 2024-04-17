@@ -6,37 +6,39 @@ output: html_document
 ---
 ```{r}
 library(rvest)
-library(dplyr)
 library(tidyr)
 library(Lahman)
+library(tidyverse)
 ```
 
 ```{r}
 url <- "https://www.baseball-reference.com/awards/hof_2023.shtml"
 html <- read_html(url)
-data2023 <- html_table(html)
+tables <- html_table(html)
+data2023 <- tables[[1]]
 
-data2023$Name <- gsub("X-", "", data2023$Name)
+write.csv(data2023, "temp.csv", row.names=FALSE)
+data2023 <- read_csv("temp.csv", skip = 1, show_col_types =FALSE)
 
-all_links <- html %>% html_nodes("table:nth-child(1)") %>% html_nodes("a") %>%
+allLinks <- html %>% html_nodes("table:nth-child(1)") %>% html_nodes("a") %>%
   lapply(function(link) {
   href <- html_attr(link, "href")
   text <- html_text(link)
   return(data.frame(href = href, text = text, stringsAsFactors = FALSE))
 })
 
-links <- do.call(rbind, all_links)
+links <- do.call(rbind, allLinks)
 
-ForPlayerID <- separate(links, href, into = c("blank", "category", "remove", "bbrefID"), sep = "/") %>%
+PlayersInfo <- separate(links, href, into = c("blank", "category", "remove", "bbrefID"), sep = "/") %>%
   select(
     category,
     bbrefID,
     Name = text
   )
 
-ForPlayerID$bbrefID <- gsub(".shtml", "", ForPlayerID$bbrefID)
+PlayersInfo$bbrefID <- gsub(".shtml", "", PlayersInfo$bbrefID)
 
-ForPlayerID <- inner_join(ForPlayerID, Lahman::People, by ="bbrefID") %>% select(
+PlayersInfo <- inner_join(PlayersInfo, Lahman::People, by ="bbrefID") %>% select(
   playerID,
   Name,
   category
@@ -45,7 +47,7 @@ ForPlayerID <- inner_join(ForPlayerID, Lahman::People, by ="bbrefID") %>% select
 ```{r}
 
 
-data2023 <- inner_join(ForPlayerID, data2023, by="Name") %>% mutate(
+data2023 <- inner_join(PlayersInfo, data2023, by="Name") %>% mutate(
   yearID = 2023, 
   votedBy = "BBWAA", 
   ballots = 389, 
@@ -64,5 +66,10 @@ data2023 <- inner_join(ForPlayerID, data2023, by="Name") %>% mutate(
   category,
   needed_note
 )
+```
+
+```{r}
+hofUpdated <- rbind(hof, data2023)
+readr::write_csv(hofUpdated, file="HallOfFame.csv")
 ```
 

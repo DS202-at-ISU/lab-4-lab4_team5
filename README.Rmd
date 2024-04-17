@@ -93,13 +93,13 @@ data2023 <- inner_join(PlayerInfo, data2023, by="Name") %>% mutate(
 hofUpdated <- rbind(hof, data2023)
 readr::write_csv(hofUpdated, file="HallOfFame.csv")
 ```
-```
 
 ```{r}
-data2023 %>% 
+HallOfFame %>% 
   ggplot(aes(x = yearID, fill = inducted)) +
   geom_bar() +
-  xlim(c(1936, 2022))
+  xlim(c(1936, 2023))
 ```
+
 
 
