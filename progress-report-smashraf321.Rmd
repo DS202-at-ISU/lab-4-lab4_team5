@@ -1,0 +1,52 @@
+---
+title: "progress-report-smashraf321"
+author: "Ashraf Shaikh"
+date: "4/17/2024"
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit the README.Rmd file -->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Lab report #4
+
+```{r}
+library(Lahman)
+head(HallOfFame, 3)
+
+```
+
+we need the foll:
+yearID: (2023)
+votedBy: (BBWAA) scrape?
+playerID: scrape
+ballots: 389 but scrape it
+needed: 292 but scrape it
+votes: (votes) scrape it
+inducted: if votes > needed then y 
+category: player?
+needed_note: just empty NA
+
+My stuff
+
+```{r}
+library(rvest)
+url <- "https://www.baseball-reference.com/awards/hof_2023.shtml"
+html <- read_html(url)
+tables <- html_table(html)
+```
+
+testing tables
+
+```{r}
+tables[[1]]
+tables[[2]]
+# we only care about table 1
+
+
+```
+
