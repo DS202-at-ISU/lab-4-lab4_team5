@@ -1,0 +1,93 @@
+---
+title: "progress-report-43Wright"
+author: "Gabriel Wright"
+date: "4/22/2024"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rvest)
+library(tidyr)
+library(Lahman)
+```
+
+## Lab 4: Into Hall of Frame
+```{r}
+head(HallOfFame, 3)
+```
+```{r}
+data <- read_html("https://www.baseball-reference.com/awards/hof_2023.shtml")
+tables <- html_table(data)
+newData <- tables[[1]]
+newData
+```
+
+``` {r}
+write.csv(newData, "temp.csv", row.names=FALSE)
+newData <- read_csv("temp.csv", skip = 1, show_col_types =FALSE)
+newData
+
+newData$Name <- gsub("X-", "", newData$Name)
+```
+```{r}
+all_links <- html %>% html_nodes("table:nth-child(1)") %>% html_nodes("a") %>%
+  lapply(function(link) {
+  href <- html_attr(link, "href")
+  text <- html_text(link)
+  return(data.frame(href = href, text = text, stringsAsFactors = FALSE))
+})
+
+links <- do.call(rbind, all_links)
+
+forPlayerID <- separate(links, href, into = c("blank", "category", "remove", "bbrefID"), sep = "/") %>%
+  select(
+    category,
+    bbrefID,
+    Name = text
+  )
+
+forPlayerID$bbrefID <- gsub(".shtml", "", forPlayerID$bbrefID)
+
+forPlayerID
+```
+
+```{r}
+forPlayerID <- inner_join(forPlayerID, Lahman::People, by ="bbrefID") %>% 
+  select(playerID,Name, category)
+
+forPlayerID
+```
+
+```{r}
+newData <- inner_join(forPlayerID, newData, by="Name") %>% mutate(
+  yearID = 2023, 
+  votedBy = "BBWAA", 
+  ballots = 389, 
+  needed = 292,
+  inducted = ifelse(Votes>=needed, "Y", "N"),
+  category = ifelse(category == 'players', "Player", NA), 
+  needed_note = NA
+) %>% select(
+  playerID,
+  yearID,
+  votedBy,
+  ballots,
+  needed,
+  votes = Votes,
+  inducted,
+  category, 
+  needed_note
+)
+
+newData
+```
+```{r}
+hof <- Lahman::HallOfFame
+hof
+hallOfFameUpdates <- rbind(hof, data2023)
+```
+
+```{r}
+#readr::write_csv(hallOfFameUpdates, file="HallOfFame.csv")
+```
