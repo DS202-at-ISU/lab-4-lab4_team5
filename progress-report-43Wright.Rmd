@@ -1,0 +1,62 @@
+---
+title: "progress-report-43Wright"
+author: "Gabriel Wright"
+date: "4/22/2024"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tidyr)
+library(Lahman)
+```
+
+## Lab 4: Into Hall of Frame
+```{r}
+head(HallOfFame, 3)
+```
+```{r}
+library(rvest)
+url <- "https://www.baseball-reference.com/awards/hof_2023.shtml"
+html <- read_html(url)
+tables <- html_table(html)
+newData <- tables[[1]]
+newData
+```
+```{r}
+all_links <- html %>% html_nodes("table:nth-child(1)") %>% html_nodes("a") %>%
+  lapply(function(link) {
+  href <- html_attr(link, "href")
+  text <- html_text(link)
+  return(data.frame(href = href, text = text, stringsAsFactors = FALSE))
+})
+
+links <- do.call(rbind, all_links)
+
+forPlayerID <- separate(links, href, into = c("blank", "category", "remove", "bbrefID"), sep = "/") %>%
+  select(
+    category,
+    bbrefID,
+    Name = text
+  )
+
+forPlayerID$bbrefID <- gsub(".shtml", "", forPlayerID$bbrefID)
+
+forPlayerID
+```
+
+```{r}
+forPlayerID <- inner_join(forPlayerID, Lahman::People, by ="bbrefID") %>% select(
+  playerID,
+  Name,
+  category
+)
+
+forPlayerID
+```
+
+
+
+
+
+
